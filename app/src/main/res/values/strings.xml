@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">AndroidDane</string>
+    <string name="producent_label">Producent</string>
+    <string name="model_label" >Model</string>
+    <string name="android_version_label">Wersja androida</string>
+    <string name="www_label">WWW</string>
 </resources>
