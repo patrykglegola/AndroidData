@@ -14,8 +14,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public final static String COL_MODEL = "model";
     public final static String COL_ANDROID_VERSION = "android version";
     public final static String COL_WWW = "www";
-    public final static String DB_create = "CREATE TABLE " + TABLE_NAME +
-            "("+ID+" integer primary key autoincrement, " +
+    public final static String DB_create = "CREATE TABLE " + TABLE_NAME + "("+
+            ID +" integer primary key autoincrement, " +
             COL_PRODUCENT + " text not null, " +
             COL_MODEL + " text not null, " +
             COL_ANDROID_VERSION + " text not null, " +
@@ -23,17 +23,21 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     private static final String DB_delete = "DROP TABLE IF EXIST "+TABLE_NAME;
 
     public DatabaseHelper(Context context) {
+
         super(context,DB_NAME,null,DB_VERSION);
     }
 
     @Override
     public void onCreate(SQLiteDatabase db)
     {
-
+        //tworzenie bazy
+        db.execSQL(DB_create);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        //aktualizacja bazy
+        db.execSQL(DB_delete);
+        onCreate(db);
     }
 }

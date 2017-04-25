@@ -4,4 +4,7 @@
     <string name="model_label" >Model</string>
     <string name="android_version_label">Wersja androida</string>
     <string name="www_label">WWW</string>
+    <string name="saveButtonText">Zapisz</string>
+    <string name="cancelButtonText">Anuluj</string>
+    <string name="wwwButtonText">WWW</string>
 </resources>
