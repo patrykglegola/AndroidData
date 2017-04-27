@@ -27,6 +27,8 @@ public class DatabaseHelper extends SQLiteOpenHelper{
         super(context,DB_NAME,null,DB_VERSION);
     }
 
+
+
     @Override
     public void onCreate(SQLiteDatabase db)
     {
