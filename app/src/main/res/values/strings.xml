@@ -7,4 +7,5 @@
     <string name="saveButtonText">Zapisz</string>
     <string name="cancelButtonText">Anuluj</string>
     <string name="wwwButtonText">WWW</string>
+    <string name="emptyPhoneList">brak dodanych telefonów</string>
 </resources>

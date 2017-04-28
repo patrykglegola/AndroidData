@@ -7,8 +7,15 @@
     tools:context="pg.androiddane.MainActivity">
 
 
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/emptyPhoneList" />
+
     <ListView
-        android:id="@+id/phonesList"
+        android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
 </LinearLayout>
