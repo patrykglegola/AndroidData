@@ -83,19 +83,19 @@
 
 
         <Button
-            android:id="@+id/wwwButton"
+            android:id="@+id/activity_edit_phone_www_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/wwwButtonText" />
 
         <Button
-            android:id="@+id/cancelButton"
+            android:id="@+id/activity_edit_phone_cancel_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/cancelButtonText" />
 
         <Button
-            android:id="@+id/saveButton"
+            android:id="@+id/activity_edit_phone_save_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/saveButtonText" />
