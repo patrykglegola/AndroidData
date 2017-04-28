@@ -8,7 +8,7 @@
 
 
     <TextView
-        android:id="@+id/textView5"
+        android:id="@android:id/empty"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/emptyPhoneList" />
