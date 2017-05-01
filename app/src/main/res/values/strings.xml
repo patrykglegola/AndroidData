@@ -8,4 +8,5 @@
     <string name="cancelButtonText">Anuluj</string>
     <string name="wwwButtonText">WWW</string>
     <string name="emptyPhoneList">brak dodanych telefonów</string>
+    <string name="fill_fields_toast">Wypełnij wszystkie pola!</string>
 </resources>
