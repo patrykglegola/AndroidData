@@ -58,11 +58,17 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.action_bar, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     public boolean onMenuItemSelected(int featureId, MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.add_phone_action:
+                createNewElement();
+                return true;
+        }
         return super.onMenuItemSelected(featureId, item);
 
     }

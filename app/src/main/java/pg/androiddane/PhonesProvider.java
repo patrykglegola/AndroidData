@@ -38,6 +38,7 @@ public class PhonesProvider extends ContentProvider {
         return false;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Nullable
     @Override
     public Cursor query(@NonNull Uri uri, @Nullable String[] projection,

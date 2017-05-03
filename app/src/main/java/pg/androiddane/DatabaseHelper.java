@@ -12,7 +12,7 @@ public class DatabaseHelper extends SQLiteOpenHelper{
     public final static String TABLE_NAME = "Phones";
     public final static String COL_PRODUCENT = "producent";
     public final static String COL_MODEL = "model";
-    public final static String COL_ANDROID_VERSION = "android version";
+    public final static String COL_ANDROID_VERSION = "android_version";
     public final static String COL_WWW = "www";
     public final static String DB_create = "CREATE TABLE " + TABLE_NAME + "("+
             ID +" integer primary key autoincrement, " +
