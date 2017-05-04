@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">AndroidDane</string>
+    <string name="app_name">Baza telefonów</string>
     <string name="producent_label">Producent</string>
     <string name="model_label" >Model</string>
     <string name="android_version_label">Wersja androida</string>
@@ -10,4 +10,7 @@
     <string name="emptyPhoneList">brak dodanych telefonów</string>
     <string name="fill_fields_toast">Wypełnij wszystkie pola!</string>
     <string name="add__phone_action_title">Dodaj telefon</string>
+    <string name="delete_phones_action_title">Usuń</string>
+    <string name="android_version_not_valid_toast">Wersja androida musi być w postaci cyfr i kropek, np 4.0 lub 4.0.2</string>
+    <string name="url_is_not_valid_toast">Adres strony WWW musi zaczynać się od http:// lub https://</string>
 </resources>

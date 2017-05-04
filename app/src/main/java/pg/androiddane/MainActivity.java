@@ -2,14 +2,18 @@ package pg.androiddane;
 
 import android.app.ListActivity;
 import android.app.LoaderManager;
+import android.content.ContentUris;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.view.ActionMode;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
@@ -17,20 +21,73 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
 
     private static final int NEW_ELEMENT = -1;
     private SimpleCursorAdapter cursorAdapter;
+    private ListView phonesList;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        activateMultiChoice();
         setFields();
+
+    }
+
+    private void activateMultiChoice() {
+        phonesList = (ListView) findViewById(android.R.id.list);
+        phonesList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        phonesList.setMultiChoiceModeListener(
+                new AbsListView.MultiChoiceModeListener() {
+                    @Override
+                    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+
+                    }
+
+                    @Override
+                    public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                        MenuInflater inflater = mode.getMenuInflater();
+                        inflater.inflate(R.menu.context_bar, menu);
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.action_delete_phones:
+                                deleteSelected();
+                                return true;
+                        }
+                        return false;
+                    }
+
+                    @Override
+                    public void onDestroyActionMode(ActionMode mode) {
+
+                    }
+                }
+        );
+    }
+
+    private void deleteSelected() {
+        long selected[] = getListView().getCheckedItemIds();
+        for (int i = 0; i < selected.length; ++i) {
+            getContentResolver().delete(ContentUris.withAppendedId(PhonesProvider.URI_CONTENTS,
+                    selected[i]), null, null);
+        }
     }
 
     private void setFields() {
         //inicjalizacja loadera:
         getLoaderManager().initLoader(0, null, this);
         //utworzenie mapowania między kolumnami tabeli a kolumnami wyświetlanej listy:
-        String[] mapFrom = new String[]{DatabaseHelper.COL_PRODUCENT, DatabaseHelper.COL_MODEL};
-        int[] mapTo = new int[]{R.id.producentText, R.id.modelEdit};
+        String[] mapFrom = new String[]{DatabaseHelper.COL_PRODUCER, DatabaseHelper.COL_MODEL};
+        int[] mapTo = new int[]{R.id.producentText, R.id.modelText};
         //adapter wymaga, aby w wyniku zapytania znajdowała się kolumna _id
         cursorAdapter = new SimpleCursorAdapter(this, R.layout.phone_list_row, null, mapFrom, mapTo, 0);
         setListAdapter(cursorAdapter);
@@ -40,7 +97,7 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         String[] projection = {DatabaseHelper.ID,
-                DatabaseHelper.COL_PRODUCENT,
+                DatabaseHelper.COL_PRODUCER,
                 DatabaseHelper.COL_MODEL};
         CursorLoader cursorLoader = new CursorLoader(this, PhonesProvider.URI_CONTENTS, projection, null, null, null);
         return cursorLoader;
@@ -83,7 +140,7 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
     }
 
     private void addOrEditElement(long id) {
-        Intent intent = new Intent(this, EditPhoneActivity.class);
+        Intent intent = new Intent(this, AddOrEditPhoneActivity.class);
         intent.putExtra(DatabaseHelper.ID, id);
         startActivityForResult(intent, 0);
     }

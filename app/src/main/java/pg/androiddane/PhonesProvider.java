@@ -35,7 +35,7 @@ public class PhonesProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         mDatabaseHelper = new DatabaseHelper(getContext());
-        return false;
+        return true;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -87,12 +87,40 @@ public class PhonesProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-        return null;
+        int typeOfUri = uriMatch.match(uri);
+        SQLiteDatabase phonesDB = mDatabaseHelper.getWritableDatabase();
+        long addedRowId = 0;
+        switch (typeOfUri) {
+            case WHOLE_TABLE:
+                phonesDB.insert(DatabaseHelper.TABLE_NAME, null, values);
+                break;
+            default:
+                throwUnknownUriException(uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return Uri.parse(DatabaseHelper.TABLE_NAME + "/" + addedRowId);
     }
 
     @Override
-    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
-        return 0;
+    public int delete(@NonNull Uri uri, @Nullable String selection,
+                      @Nullable String[] selectionArgs) {
+        int typeOfUri = uriMatch.match(uri);
+        SQLiteDatabase phonesDB = mDatabaseHelper.getWritableDatabase();
+        int amountOfDeletedRows = 0;
+        switch (typeOfUri) {
+            case WHOLE_TABLE:
+                amountOfDeletedRows = phonesDB.delete(DatabaseHelper.TABLE_NAME,
+                        selection, selectionArgs);
+                break;
+            case SELECTED_ROW:
+                amountOfDeletedRows = phonesDB.delete(DatabaseHelper.TABLE_NAME,
+                        DatabaseHelper.ID + "=?", new String[]{uri.getPathSegments().get(1)});
+                break;
+            default:
+                throwUnknownUriException(uri);
+        }
+        getContext().getContentResolver().notifyChange(uri, null);
+        return amountOfDeletedRows;
     }
 
     @Override

@@ -3,6 +3,7 @@ package pg.androiddane;
 import android.app.Activity;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,15 +12,23 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class EditPhoneActivity extends Activity {
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Aktywność obsługująca dodawanie nowych telefonów do bazy, edycję informacji
+ * o istnięjących w bazie telefonac oraz dprzejście na stronę internetową o danym telefonie
+ */
+
+public class AddOrEditPhoneActivity extends Activity {
 
     private static final int NEW_ROW = -1;
 
     private long rowId;
-    private EditText producentET;
+    private EditText producerET;
     private EditText modelET;
     private EditText androidVersionET;
-    private EditText wwwET;
+    private EditText urlET;
     private Button saveButton;
     private Button cancelButton;
     private Button wwwButton;
@@ -28,7 +37,7 @@ public class EditPhoneActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_edit_phone);
+        setContentView(R.layout.activity_add_or_edit_phone);
         findAllViews();
         rowId = NEW_ROW;
         if(savedInstanceState != null) {
@@ -57,6 +66,12 @@ public class EditPhoneActivity extends Activity {
                 cancelButtonClick();
             }
         });
+        wwwButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                wwwButtonClick();
+            }
+        });
     }
 
     //nadpisanie metody onSaveInstanceState, aby zabezpieczyć aplikację przed utratą identyfikatora
@@ -69,25 +84,35 @@ public class EditPhoneActivity extends Activity {
 
     //obsługa przycisku "zapisz":
     private void saveButtonClick() {
-        if(areTextFieldsNotEmpty()) { //jeśli pola nie są puste, zapisujemy dane do bazy:
+        if(isAnyTextFieldEmpty()) {
+            //jeśli któreś z pól jest puste, wyświetlany jest stosowny komunikat
+            Toast.makeText(this, getString(R.string.fill_fields_toast), Toast.LENGTH_SHORT).show();
+        }
+        else if (!androidVersionIsValid()) {
+            Toast.makeText(this, getString(R.string.android_version_not_valid_toast),
+                    Toast.LENGTH_SHORT).show();
+        }
+        else if (!urlIsValid()) {
+            Toast.makeText(this, getString(R.string.url_is_not_valid_toast),
+                    Toast.LENGTH_SHORT).show();
+        }
+        else { ///jeśli pola nie są puste, zapisujemy dane do bazy:
             ContentValues values = new ContentValues();
-            values.put(DatabaseHelper.COL_PRODUCENT, producentET.getText().toString());
+            values.put(DatabaseHelper.COL_PRODUCER, producerET.getText().toString());
             values.put(DatabaseHelper.COL_MODEL, modelET.getText().toString());
             values.put(DatabaseHelper.COL_ANDROID_VERSION, androidVersionET.getText().toString());
-            values.put(DatabaseHelper.COL_WWW, wwwET.getText().toString());
-            if(rowId == NEW_ROW) {
+            values.put(DatabaseHelper.COL_WWW, urlET.getText().toString());
+
+            if (rowId == NEW_ROW) {
                 Uri newRowUri = getContentResolver().insert(PhonesProvider.URI_CONTENTS, values);
                 rowId = Integer.parseInt(newRowUri.getLastPathSegment());
-            }
-            else {
+            } else {
                 int changedRows = getContentResolver().update(ContentUris.withAppendedId(
                         PhonesProvider.URI_CONTENTS, rowId), values, null, null);
             }
             setResult(RESULT_OK); //ustawienie wyniku działania aktywności jako OK
             finish(); // zakończenie aktywności
         }
-        else //jeśli któreś z pól jest puste, wyświetlany jest stosowny komunikat
-            Toast.makeText(this, getString(R.string.fill_fields_toast), Toast.LENGTH_SHORT).show();
     }
 
     //obsługa przycisku "anuluj":
@@ -96,16 +121,42 @@ public class EditPhoneActivity extends Activity {
         finish();
     }
 
-    private boolean areTextFieldsNotEmpty() {
-        return !(producentET.getText().toString().isEmpty()
+    private void wwwButtonClick(){
+        if (!urlIsValid()) {
+            Toast.makeText(this, getString(R.string.url_is_not_valid_toast),
+                    Toast.LENGTH_SHORT).show();
+        }
+        else {
+            Intent webBrowserIntent = new Intent("android.intent.action.VIEW",
+                    Uri.parse(urlET.getText().toString()));
+            startActivity(webBrowserIntent);
+        }
+    }
+
+    private boolean urlIsValid() {
+        String url = urlET.getText().toString();
+        return ( url.startsWith("http://") || url.startsWith("https://") );
+    }
+
+    //
+    private boolean androidVersionIsValid() {
+        Pattern pattern = Pattern.compile( "[1-9]{1}(\\.[0-9]){1,2}" );
+        Matcher matcher = pattern.matcher(androidVersionET.getText().toString());
+        return matcher.matches();
+    }
+
+    //sprawdzenie czy jakiekolwiek pole jest puste
+    private boolean isAnyTextFieldEmpty() {
+        return ( producerET.getText().toString().isEmpty()
         || modelET.getText().toString().isEmpty()
         || androidVersionET.getText().toString().isEmpty()
-        || wwwET.getText().toString().isEmpty() );
+        || urlET.getText().toString().isEmpty() );
     }
+
 
     private void fillFields() {
         //tablica określająca które kolumny chcemy pobrać z dostawcy:
-        String projection[] = { DatabaseHelper.COL_PRODUCENT, DatabaseHelper.COL_MODEL,
+        String projection[] = { DatabaseHelper.COL_PRODUCER, DatabaseHelper.COL_MODEL,
                             DatabaseHelper.COL_ANDROID_VERSION, DatabaseHelper.COL_WWW};
         //odpytanie dostawcy treści i zwrócenie kursora:
         Cursor phonesCursor = getContentResolver().query(
@@ -114,13 +165,13 @@ public class EditPhoneActivity extends Activity {
         //przestawienie kursora na pierwszy element
         phonesCursor.moveToFirst();
         //odczytanie wartości od dostawcy i wpisanie do pól tekstowych:
-        producentET.setText(phonesCursor.getString(phonesCursor.getColumnIndexOrThrow(
-                DatabaseHelper.COL_PRODUCENT)));
+        producerET.setText(phonesCursor.getString(phonesCursor.getColumnIndexOrThrow(
+                DatabaseHelper.COL_PRODUCER)));
         modelET.setText(phonesCursor.getString(phonesCursor.getColumnIndexOrThrow(
                 DatabaseHelper.COL_MODEL)));
         androidVersionET.setText(phonesCursor.getString(phonesCursor.getColumnIndexOrThrow(
                 DatabaseHelper.COL_ANDROID_VERSION)));
-        wwwET.setText(phonesCursor.getString(phonesCursor.getColumnIndexOrThrow(
+        urlET.setText(phonesCursor.getString(phonesCursor.getColumnIndexOrThrow(
                 DatabaseHelper.COL_WWW)));
         //zamknięcie kursora:
         phonesCursor.close();
@@ -129,10 +180,10 @@ public class EditPhoneActivity extends Activity {
 
     //metoda pzydzielająca polom odpowiednie elementy XML
     private void findAllViews() {
-        producentET = (EditText) findViewById(R.id.producentEdit);
+        producerET = (EditText) findViewById(R.id.producentEdit);
         modelET = (EditText) findViewById(R.id.modelEdit);
         androidVersionET = (EditText) findViewById(R.id.androidVersionEdit);
-        wwwET = (EditText) findViewById(R.id.wwwEdit);
+        urlET = (EditText) findViewById(R.id.wwwEdit);
         saveButton = (Button) findViewById(R.id.activity_edit_phone_save_button);
         cancelButton = (Button) findViewById(R.id.activity_edit_phone_cancel_button);
         wwwButton = (Button) findViewById(R.id.activity_edit_phone_www_button);
