@@ -11,6 +11,10 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 
+/**
+ * Klasa deklarująca dostawcę treści i jego działania (metody)
+ */
+
 public class PhonesProvider extends ContentProvider {
 
     //pole przechowujące referencję do obiektu pomocnika bazy:
@@ -66,13 +70,12 @@ public class PhonesProvider extends ContentProvider {
                         addIdToSelection(selection, uri),
                         selectionArgs, null, null, sortOrder, null, null);
                 break;
-            //jeśli URI nie zostanie rozpoznane, zgłaszany jest wyjątek
+            //jeśli URI nie zostanie rozpoznane, następuje wyrzucenie wyjątku
             default:
                 throwUnknownUriException(uri);
         }
-        //monitorowanie zmiany danych URI:
         phonesCursor.setNotificationUri(
-                getContext().getContentResolver(), uri);
+                getContext().getContentResolver(), uri); //zgłoszenie zmiany danych URI
 
         return phonesCursor;
     }
@@ -87,17 +90,19 @@ public class PhonesProvider extends ContentProvider {
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-        int typeOfUri = uriMatch.match(uri);
+        int typeOfUri = uriMatch.match(uri); //oczytanie typu Uri
         SQLiteDatabase phonesDB = mDatabaseHelper.getWritableDatabase();
         long addedRowId = 0;
         switch (typeOfUri) {
+            //insert wykonujemy zawsze dla całej tabeli, nie dla konkretnego wiesza
             case WHOLE_TABLE:
                 phonesDB.insert(DatabaseHelper.TABLE_NAME, null, values);
                 break;
             default:
+                //jeśli URI nie zostanie rozpoznane, następuje wyrzucenie wyjątku
                 throwUnknownUriException(uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
+        getContext().getContentResolver().notifyChange(uri, null); //zgłoszenie zmiany danych URI
         return Uri.parse(DatabaseHelper.TABLE_NAME + "/" + addedRowId);
     }
 
@@ -109,17 +114,20 @@ public class PhonesProvider extends ContentProvider {
         int amountOfDeletedRows = 0;
         switch (typeOfUri) {
             case WHOLE_TABLE:
+                //usuwanie całej tabeli
                 amountOfDeletedRows = phonesDB.delete(DatabaseHelper.TABLE_NAME,
                         selection, selectionArgs);
                 break;
             case SELECTED_ROW:
+                //usuwanie pojedynczego wiersza
                 amountOfDeletedRows = phonesDB.delete(DatabaseHelper.TABLE_NAME,
                         DatabaseHelper.ID + "=?", new String[]{uri.getPathSegments().get(1)});
                 break;
             default:
+                //jeśli URI nie zostanie rozpoznane, następuje wyrzucenie wyjątku
                 throwUnknownUriException(uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
+        getContext().getContentResolver().notifyChange(uri, null); //zgłoszenie zmiany danych URI
         return amountOfDeletedRows;
     }
 
@@ -131,26 +139,30 @@ public class PhonesProvider extends ContentProvider {
 
         int amountOfUpdated = 0;
         switch (typeOfUri) {
+            //aktualizacja całej tabeli
             case WHOLE_TABLE:
                 amountOfUpdated = phonesDB.update(DatabaseHelper.TABLE_NAME,
                         values, selection, selectionArgs);
                 break;
             case SELECTED_ROW:
+                //aktualizacja pojedynczego wiersza tabeli
                 amountOfUpdated = phonesDB.update(DatabaseHelper.TABLE_NAME,
                         values, addIdToSelection(selection, uri), selectionArgs);
                 break;
             default:
+                //jeśli URI nie zostanie rozpoznane, następuje wyrzucenie wyjątku
                 throwUnknownUriException(uri);
         }
-        getContext().getContentResolver().notifyChange(uri, null);
+        getContext().getContentResolver().notifyChange(uri, null); //zgłoszenie zmiany danych URI
         return amountOfUpdated;
     }
 
+    //metoda obsługująca wyrzucenie wyjątku o nierozpoznanym URI:
     private void throwUnknownUriException(@NonNull Uri uri) {
         throw new IllegalArgumentException("Unknown URI: " + uri);
     }
 
-
+    //metoda dodająca do tablicy zawierającej identyfikatowy wybranych wierszy ID kolejnego wiersza:
     private String addIdToSelection(String selection, Uri uri) {
         if (selection != null && !selection.equals(""))
             selection = selection + " and " + DatabaseHelper.ID + "=" + uri.getLastPathSegment();

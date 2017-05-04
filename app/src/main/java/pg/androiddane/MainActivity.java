@@ -17,9 +17,15 @@ import android.widget.AbsListView;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+/**
+ * Główna aktywność aplikacji, lista wprowadzonych do bazy telefonów
+ */
+
 public class MainActivity extends ListActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    //-1 jest przekazywane jako id wiersza, kiedy chcemy dodać nowy element
     private static final int NEW_ELEMENT = -1;
+
     private SimpleCursorAdapter cursorAdapter;
     private ListView phonesList;
 
@@ -29,23 +35,26 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        activateMultiChoice();
-        setFields();
+        activateMultiChoice(); //nadanie możliwości zaznaczania wielu elementów listy jednocześnie
+        setUpAdapter(); //ustawienie i uruchomienie adaptera listy
 
     }
 
+    //metoda umożliwiająca jednoczesne zaznaczanie elementów na liście:
     private void activateMultiChoice() {
         phonesList = (ListView) findViewById(android.R.id.list);
         phonesList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         phonesList.setMultiChoiceModeListener(
                 new AbsListView.MultiChoiceModeListener() {
                     @Override
-                    public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+                    public void onItemCheckedStateChanged(ActionMode mode, int position,
+                                                          long id, boolean checked) {
 
                     }
 
                     @Override
                     public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                        //kiedy zaznaczymy element na liście, otwiera się menu kontekstowe
                         MenuInflater inflater = mode.getMenuInflater();
                         inflater.inflate(R.menu.context_bar, menu);
                         return true;
@@ -59,6 +68,8 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
                     @Override
                     public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                         switch (item.getItemId()) {
+                            //jeśli klikniemy ikonkę usunięcia na pasku akcji, wszystkie
+                            //zaznaczone elementy listy są usuwane z bazy
                             case R.id.action_delete_phones:
                                 deleteSelected();
                                 return true;
@@ -74,6 +85,7 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
         );
     }
 
+    //metoda obsługująca usunięcie wszystkich zaznaczonych elementów listy
     private void deleteSelected() {
         long selected[] = getListView().getCheckedItemIds();
         for (int i = 0; i < selected.length; ++i) {
@@ -82,14 +94,16 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
         }
     }
 
-    private void setFields() {
+    //metoda ustawiająca i uruchamiająca adapter listy:
+    private void setUpAdapter() {
         //inicjalizacja loadera:
         getLoaderManager().initLoader(0, null, this);
         //utworzenie mapowania między kolumnami tabeli a kolumnami wyświetlanej listy:
         String[] mapFrom = new String[]{DatabaseHelper.COL_PRODUCER, DatabaseHelper.COL_MODEL};
         int[] mapTo = new int[]{R.id.producentText, R.id.modelText};
         //adapter wymaga, aby w wyniku zapytania znajdowała się kolumna _id
-        cursorAdapter = new SimpleCursorAdapter(this, R.layout.phone_list_row, null, mapFrom, mapTo, 0);
+        cursorAdapter = new SimpleCursorAdapter(this, R.layout.phone_list_row,
+                null, mapFrom, mapTo, 0);
         setListAdapter(cursorAdapter);
     }
 
@@ -99,7 +113,8 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
         String[] projection = {DatabaseHelper.ID,
                 DatabaseHelper.COL_PRODUCER,
                 DatabaseHelper.COL_MODEL};
-        CursorLoader cursorLoader = new CursorLoader(this, PhonesProvider.URI_CONTENTS, projection, null, null, null);
+        CursorLoader cursorLoader = new CursorLoader(this, PhonesProvider.URI_CONTENTS,
+                projection, null, null, null);
         return cursorLoader;
     }
 
@@ -130,6 +145,7 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
 
     }
 
+    //metoda wywoływana po naciśnięciu dowolnego elementu listy:
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
@@ -139,12 +155,14 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
         addOrEditElement((long) NEW_ELEMENT);
     }
 
+    //metoda uruchamiająca nową aktywność w celu dodania lub edycji elementu listy:
     private void addOrEditElement(long id) {
         Intent intent = new Intent(this, AddOrEditPhoneActivity.class);
         intent.putExtra(DatabaseHelper.ID, id);
         startActivityForResult(intent, 0);
     }
 
+    //metoda wywoływana po zamknięciu wywołanej aktywności:
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

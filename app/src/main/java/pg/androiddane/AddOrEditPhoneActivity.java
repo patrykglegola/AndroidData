@@ -82,17 +82,19 @@ public class AddOrEditPhoneActivity extends Activity {
         outState.putLong(DatabaseHelper.ID, rowId);
     }
 
-    //obsługa przycisku "zapisz":
+    //obsługa przycisku "Zapisz":
     private void saveButtonClick() {
         if(isAnyTextFieldEmpty()) {
             //jeśli któreś z pól jest puste, wyświetlany jest stosowny komunikat
             Toast.makeText(this, getString(R.string.fill_fields_toast), Toast.LENGTH_SHORT).show();
         }
+        //jeśli wersja androida ma niepoprawny format, wyświetlany jest stosowny komunikat
         else if (!androidVersionIsValid()) {
             Toast.makeText(this, getString(R.string.android_version_not_valid_toast),
                     Toast.LENGTH_SHORT).show();
         }
         else if (!urlIsValid()) {
+            //jeśli adres url ma niepoprawny format, wyświetlany jest stosowny komunikat
             Toast.makeText(this, getString(R.string.url_is_not_valid_toast),
                     Toast.LENGTH_SHORT).show();
         }
@@ -104,9 +106,11 @@ public class AddOrEditPhoneActivity extends Activity {
             values.put(DatabaseHelper.COL_WWW, urlET.getText().toString());
 
             if (rowId == NEW_ROW) {
+                //dodajemy nowy wiersz do tabeli w bazie
                 Uri newRowUri = getContentResolver().insert(PhonesProvider.URI_CONTENTS, values);
                 rowId = Integer.parseInt(newRowUri.getLastPathSegment());
             } else {
+                //edytujemy istniejący wiersz tabeli w bazie
                 int changedRows = getContentResolver().update(ContentUris.withAppendedId(
                         PhonesProvider.URI_CONTENTS, rowId), values, null, null);
             }
@@ -115,30 +119,34 @@ public class AddOrEditPhoneActivity extends Activity {
         }
     }
 
-    //obsługa przycisku "anuluj":
+    //obsługa przycisku "Anuluj":
     private void cancelButtonClick() {
-        setResult(RESULT_CANCELED);
-        finish();
+        setResult(RESULT_CANCELED); //ustawienie wyniku działania aktywności jako anulowany
+        finish(); // zakończenie aktywności
     }
 
+    //obsługa przycisku "WWW":
     private void wwwButtonClick(){
         if (!urlIsValid()) {
+            //jeśli adres url ma niepoprawny format, wyświetlany jest stosowny komunikat
             Toast.makeText(this, getString(R.string.url_is_not_valid_toast),
                     Toast.LENGTH_SHORT).show();
         }
         else {
+            //wywołanie aktywności przeglądarki i przejście pod adres url wyświetlany w oknie "WWW"
             Intent webBrowserIntent = new Intent("android.intent.action.VIEW",
                     Uri.parse(urlET.getText().toString()));
             startActivity(webBrowserIntent);
         }
     }
 
+    //metoda sprawdzająca czy adres url zaczyna się od "http://" lub "https://"
     private boolean urlIsValid() {
         String url = urlET.getText().toString();
         return ( url.startsWith("http://") || url.startsWith("https://") );
     }
 
-    //
+    //metoda sprawdzająca poprawność formatu wprowadzonej wersji androida:
     private boolean androidVersionIsValid() {
         Pattern pattern = Pattern.compile( "[1-9]{1}(\\.[0-9]){1,2}" );
         Matcher matcher = pattern.matcher(androidVersionET.getText().toString());
